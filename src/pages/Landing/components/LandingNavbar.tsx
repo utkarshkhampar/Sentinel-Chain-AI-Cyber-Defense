@@ -46,7 +46,7 @@ export function LandingNavbar() {
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
-          <a href="https://github.com" target="_blank" rel="noreferrer">
+          <a href="https://github.com/utkarshkhampar/Sentinel-Chain-AI-Cyber-Defense" target="_blank" rel="noreferrer">
             <Button variant="ghost" size="sm">
               <Github className="h-4 w-4" /> GitHub
             </Button>

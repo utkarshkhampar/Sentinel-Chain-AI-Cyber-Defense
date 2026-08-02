@@ -72,7 +72,7 @@ export function HelpCenter() {
           <CardBody className="space-y-3 pt-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">Still need help?</p>
             <a href="mailto:support@sentinelchain.io" className="flex items-center gap-2.5 rounded-lg border border-border bg-surface/60 p-3 text-sm text-text-secondary hover:text-text-primary">
-              <Mail className="h-4 w-4 text-brand-blue-light" /> support@sentinelchain.io
+              <Mail className="h-4 w-4 text-brand-blue-light" /> utkarshkhampar@gmail.com
             </a>
             <button className="flex w-full items-center gap-2.5 rounded-lg border border-border bg-surface/60 p-3 text-sm text-text-secondary hover:text-text-primary">
               <MessageCircle className="h-4 w-4 text-brand-blue-light" /> Start live chat

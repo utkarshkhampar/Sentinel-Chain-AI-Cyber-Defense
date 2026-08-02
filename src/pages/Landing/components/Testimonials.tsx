@@ -4,26 +4,26 @@ import { SectionHeading, Reveal } from "./Reveal";
 const testimonials = [
   {
     quote: "The explainability layer is what got our analysts to actually trust the AI verdicts instead of re-checking everything by hand.",
-    name: "Aditi Rao",
+    name: "Yashashavi Kant",
     role: "SOC Lead, Fintech Enterprise",
   },
   {
     quote: "Having evidence anchored automatically changed how our legal team engages with incident reports — they stopped asking us to 're-prove' timelines.",
-    name: "Marcus Webb",
+    name: "Prachi Mishra",
     role: "Director of Security, Cloud Infrastructure Co.",
   },
   {
     quote: "We cut our mean-time-to-detect significantly after moving correlation off static rules and onto the graph-aware model.",
-    name: "Priya Nair",
+    name: "Diksha Jaiswal",
     role: "Head of Threat Detection, Healthcare Group",
   },
 ];
 
 const team = [
-  { name: "Riya Singh", role: "Founder & Security Architect", initials: "RS" },
-  { name: "John Doe", role: "AI/ML Engineering Lead", initials: "JD" },
-  { name: "Jane Smith", role: "Blockchain Engineering Lead", initials: "JS" },
-  { name: "Arman Verma", role: "Platform & DevOps Lead", initials: "AV" },
+  { name: "Yashashavi Kant", role: "Founder & Security Architect", initials: "RS" },
+  { name: "Ujjwal Singh, Vaibhav Chaturvedi", role: "AI/ML Engineering Lead", initials: "JD" },
+  { name: "Prachi Mishra", role: "Blockchain Engineering Lead", initials: "JS" },
+  { name: "Diksha Jaiswal, Priyansh Singh", role: "Platform & DevOps Lead", initials: "JD" },
 ];
 
 export function Testimonials() {

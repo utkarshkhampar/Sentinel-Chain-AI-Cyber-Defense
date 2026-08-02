@@ -93,8 +93,8 @@ export function Users() {
 
       <Modal open={inviteOpen} onClose={() => setInviteOpen(false)} title="Invite a new user" size="sm">
         <form onSubmit={sendInvite} className="space-y-4">
-          <Input label="Full name" placeholder="Jordan Ellis" required />
-          <Input label="Work email" type="email" placeholder="jordan@company.com" required />
+          <Input label="Full name" placeholder="Utkarsha Kushwaha" required />
+          <Input label="Work email" type="email" placeholder="utkarshkhampar@gmail.com" required />
           <div>
             <label className="mb-1.5 block text-xs font-medium text-text-secondary">Role</label>
             <select className="h-10 w-full rounded-lg border border-border bg-surface-raised px-3 text-sm text-text-primary focus:border-brand-blue/50 focus:outline-none focus:ring-2 focus:ring-brand-blue/20">

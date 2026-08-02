@@ -44,8 +44,8 @@ export function ContactCTA() {
 
         <Reveal delay={0.15}>
           <form onSubmit={onSubmit} className="panel space-y-4 p-6">
-            <Input label="Full name" placeholder="Jordan Ellis" required />
-            <Input label="Work email" icon={Mail} type="email" placeholder="you@company.com" required />
+            <Input label="Full name" placeholder="Utkarsha Kushwaha" required />
+            <Input label="Work email" icon={Mail} type="email" placeholder="utkarshkhampar@gmail.com" required />
             <Textarea label="Message" placeholder="Tell us about your SOC environment..." rows={4} required />
             <Button type="submit" className="w-full" disabled={submitting}>
               {submitting ? "Sending..." : "Send Message"}
@@ -80,7 +80,7 @@ export function LandingFooter() {
               AI-powered autonomous cyber defense with blockchain-anchored evidence assurance.
             </p>
             <div className="mt-4 flex items-center gap-3">
-              <a href="https://github.com" target="_blank" rel="noreferrer" className="text-text-muted hover:text-text-primary">
+              <a href="https://github.com/utkarshkhampar/Sentinel-Chain-AI-Cyber-Defense" target="_blank" rel="noreferrer" className="text-text-muted hover:text-text-primary">
                 <Github className="h-4 w-4" />
               </a>
               <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-text-muted hover:text-text-primary">
