@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/Feedback";
 import { mockAssets, mockIncidents } from "@/mocks/incidents";
 import { mockThreats } from "@/mocks/threats";
-import { cn } from "@/utils/cn";
 
 export function AssetDetail() {
   const { id } = useParams();

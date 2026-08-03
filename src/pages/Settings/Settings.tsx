@@ -61,7 +61,7 @@ export function Settings() {
                 <Toggle checked label="Session timeout" description="Automatically log out inactive sessions after 30 minutes" onChange={() => {}} />
               </div>
               <div className="rounded-lg border border-border bg-surface/60 p-4">
-                <Toggle label="IP allowlisting" description="Restrict console access to approved IP ranges" onChange={() => {}} />
+                <Toggle checked={false} label="IP allowlisting" description="Restrict console access to approved IP ranges" onChange={() => {}} />
               </div>
               <Button onClick={save}><Save className="h-4 w-4" /> Save Changes</Button>
             </>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BrainCircuit, TrendingUp, Activity, Gauge, Users, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui/Card";
 import { Tabs, type TabItem } from "@/components/ui/Tabs";
 import { Progress } from "@/components/ui/Feedback";
 import { aiPredictions, uebaRiskScores } from "@/mocks/organization";
