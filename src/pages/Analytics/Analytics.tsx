@@ -3,7 +3,7 @@ import { BarChart3 } from "lucide-react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar as RadarPlot } from "recharts";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
-import { threatTimeline, attackTypeFrequency, geoThreatPoints, threatDistribution } from "@/mocks/threats";
+import { threatTimeline, attackTypeFrequency, geoThreatPoints } from "@/mocks/threats";
 
 const tooltipStyle = { background: "#111a2e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 };
 

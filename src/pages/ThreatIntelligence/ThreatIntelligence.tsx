@@ -5,7 +5,6 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Tabs, type TabItem } from "@/components/ui/Tabs";
 import { Badge } from "@/components/ui/Badge";
 import { iocFeed, cveDatabase, mitreMatrix, malwareFeed, trendingThreats } from "@/mocks/threatIntel";
-import { cn } from "@/utils/cn";
 
 const tabs: TabItem[] = [
   { id: "ioc", label: "IOC Feed", icon: <ShieldAlert className="h-3.5 w-3.5" />, badge: iocFeed.length },

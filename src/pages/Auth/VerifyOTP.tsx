@@ -9,7 +9,7 @@ export function VerifyOTP() {
   const navigate = useNavigate();
   const [code, setCode] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   function startCooldown() {
     setResendCooldown(30);
