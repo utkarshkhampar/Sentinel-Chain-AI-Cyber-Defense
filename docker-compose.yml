@@ -1,0 +1,154 @@
+# Sentinel Chain — local development stack.
+# Implemented application services: auth-service, asset-service,
+# incident-service, log-collector-service (see Backend Roadmap Chapter 14
+# for what's next). Infra services below (Kafka, Elasticsearch, Neo4j) are
+# already wired so later services can be dropped in without touching this
+# file's topology — only new `services:` entries need adding.
+
+services:
+  # ---------------------------------------------------------------------
+  # Datastores
+  # ---------------------------------------------------------------------
+  auth-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: sentinel
+      POSTGRES_DB: sentinel_auth
+    ports: ["5433:5432"]
+    volumes: [auth_db_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  asset-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: sentinel
+      POSTGRES_DB: sentinel_assets
+    ports: ["5434:5432"]
+    volumes: [asset_db_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  incident-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: sentinel
+      POSTGRES_DB: sentinel_incidents
+    ports: ["5435:5432"]
+    volumes: [incident_db_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Kafka (KRaft mode — no separate Zookeeper container needed)
+  kafka:
+    image: confluentinc/cp-kafka:7.7.0
+    ports: ["9092:9092"]
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      CLUSTER_ID: sentinelchain-local-dev-cluster
+
+  # Elasticsearch — used starting with the Threat Detection / Analytics
+  # services (roadmap Chapter 4.4); included now so its data survives
+  # across `docker compose up` cycles as more services land on it.
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports: ["9200:9200"]
+    volumes: [es_data:/usr/share/elasticsearch/data]
+
+  # Neo4j — used starting with the Graph Service (roadmap Chapter 4.5)
+  neo4j:
+    image: neo4j:5.24-community
+    environment:
+      NEO4J_AUTH: neo4j/sentinel-dev-password
+    ports: ["7474:7474", "7687:7687"]
+    volumes: [neo4j_data:/data]
+
+  # ---------------------------------------------------------------------
+  # Application services
+  # ---------------------------------------------------------------------
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    env_file: services/auth-service/.env.example
+    environment:
+      DATABASE_URL: postgresql+psycopg://sentinel:sentinel@auth-db:5432/sentinel_auth
+      REDIS_URL: redis://redis:6379/0
+    ports: ["8000:8000"]
+    depends_on:
+      auth-db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  asset-service:
+    build:
+      context: .
+      dockerfile: services/asset-service/Dockerfile
+    env_file: services/asset-service/.env.example
+    environment:
+      DATABASE_URL: postgresql+psycopg://sentinel:sentinel@asset-db:5432/sentinel_assets
+    ports: ["8001:8000"]
+    depends_on:
+      asset-db: { condition: service_healthy }
+      kafka: { condition: service_started }
+
+  incident-service:
+    build:
+      context: .
+      dockerfile: services/incident-service/Dockerfile
+    env_file: services/incident-service/.env.example
+    environment:
+      DATABASE_URL: postgresql+psycopg://sentinel:sentinel@incident-db:5432/sentinel_incidents
+    ports: ["8002:8000"]
+    depends_on:
+      incident-db: { condition: service_healthy }
+      kafka: { condition: service_started }
+
+  log-collector-service:
+    build:
+      context: .
+      dockerfile: services/log-collector-service/Dockerfile
+    env_file: services/log-collector-service/.env.example
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports: ["8003:8000"]
+    depends_on:
+      kafka: { condition: service_started }
+
+volumes:
+  auth_db_data:
+  asset_db_data:
+  incident_db_data:
+  es_data:
+  neo4j_data:

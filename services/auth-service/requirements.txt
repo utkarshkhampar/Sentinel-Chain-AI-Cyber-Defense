@@ -1,0 +1,22 @@
+fastapi>=0.115
+uvicorn[standard]>=0.32
+pydantic[email]>=2.9
+pydantic-settings>=2.6
+sqlalchemy>=2.0
+alembic>=1.14
+psycopg[binary]>=3.2
+redis>=5.1
+python-jose[cryptography]>=3.3
+passlib[bcrypt]>=1.7
+pyotp>=2.9
+python-multipart>=0.0.12
+
+# Local shared packages (roadmap Chapter 13.1 — libs/)
+-e ../../libs/common
+-e ../../libs/auth_client
+-e ../../libs/events
+
+# Test dependencies
+pytest>=8.3
+pytest-cov>=6.0
+httpx>=0.27
