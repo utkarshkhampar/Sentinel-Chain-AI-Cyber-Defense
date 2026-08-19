@@ -1,0 +1,340 @@
+# Sentinel Chain — Full Local Backend Stack
+# Owner: Diksha Jaiswal (M6 — DevOps/QA Lead) — Sprint 1
+#
+# Brings up every microservice + every datastore so any engineer can run
+# the full backend on one machine. Run: docker compose up -d
+#
+# NOTE ON FABRIC: the Hyperledger Fabric test network (crypto material,
+# genesis block, CA, orderer, 2 peers) is NOT included here — it is owned
+# by Prachi Mishra (M5) per Chapter 13. Once her `chaincode/` and Fabric
+# network config land, add a `fabric-network` include here and wire
+# blockchain-service's FABRIC_* env vars to it. blockchain-service runs
+# today against a stub so the rest of the stack isn't blocked on it.
+
+name: sentinel-chain
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  networks:
+    - sentinel-net
+  environment: &default-env
+    DATABASE_URL: postgresql://sentinel:sentinel@postgres:5432/sentinel
+    REDIS_URL: redis://redis:6379/0
+    KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    LOG_LEVEL: INFO
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    kafka:
+      condition: service_healthy
+
+services:
+  # ─────────────────────────────────────────────────────────────
+  # DATA STORES
+  # ─────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: sentinel
+      POSTGRES_DB: sentinel
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sentinel-net
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - sentinel-net
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - sentinel-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    networks:
+      - sentinel-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks:
+      - sentinel-net
+
+  neo4j:
+    image: neo4j:5.23-community
+    environment:
+      NEO4J_AUTH: neo4j/sentinel123
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sentinel-net
+
+  # ─────────────────────────────────────────────────────────────
+  # PLATFORM (M1 — Yashashvi Kant)
+  # ─────────────────────────────────────────────────────────────
+  api-gateway:
+    <<: *service-defaults
+    build: ./services/api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      <<: *default-env
+
+  auth-service:
+    <<: *service-defaults
+    build: ./services/auth-service
+    ports:
+      - "8001:8001"
+    environment:
+      <<: *default-env
+
+  user-service:
+    <<: *service-defaults
+    build: ./services/user-service
+    ports:
+      - "8002:8002"
+    environment:
+      <<: *default-env
+
+  # ─────────────────────────────────────────────────────────────
+  # CORE DOMAIN (M2 — Ujjwal Singh)
+  # ─────────────────────────────────────────────────────────────
+  asset-service:
+    <<: *service-defaults
+    build: ./services/asset-service
+    ports:
+      - "8003:8003"
+    environment:
+      <<: *default-env
+
+  incident-service:
+    <<: *service-defaults
+    build: ./services/incident-service
+    ports:
+      - "8004:8004"
+    environment:
+      <<: *default-env
+
+  device-discovery-service:
+    <<: *service-defaults
+    build: ./services/device-discovery-service
+    ports:
+      - "8005:8005"
+    environment:
+      <<: *default-env
+
+  # ─────────────────────────────────────────────────────────────
+  # DATA PIPELINE (M3 — Vaibhav Chaturvedi)
+  # ─────────────────────────────────────────────────────────────
+  log-collector-service:
+    <<: *service-defaults
+    build: ./services/log-collector-service
+    ports:
+      - "8006:8006"
+    environment:
+      <<: *default-env
+
+  threat-detection-service:
+    <<: *service-defaults
+    build: ./services/threat-detection-service
+    ports:
+      - "8007:8007"
+    environment:
+      <<: *default-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────────
+  # AI / GRAPH / INTEL (M4 — Ujjwal Singh)
+  # ─────────────────────────────────────────────────────────────
+  ai-engine-service:
+    <<: *service-defaults
+    build: ./services/ai-engine-service
+    ports:
+      - "8008:8008"
+    environment:
+      <<: *default-env
+
+  graph-service:
+    <<: *service-defaults
+    build: ./services/graph-service
+    ports:
+      - "8009:8009"
+    environment:
+      <<: *default-env
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: sentinel123
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+
+  threat-intelligence-service:
+    <<: *service-defaults
+    build: ./services/threat-intelligence-service
+    ports:
+      - "8010:8010"
+    environment:
+      <<: *default-env
+
+  # ─────────────────────────────────────────────────────────────
+  # BLOCKCHAIN / AUDIT (M5 — Prachi Mishra)
+  # ─────────────────────────────────────────────────────────────
+  blockchain-service:
+    <<: *service-defaults
+    build: ./services/blockchain-service
+    ports:
+      - "8011:8011"
+    environment:
+      <<: *default-env
+      # TODO(M5): point at the real Fabric test network once
+      # services/blockchain-service/chaincode/ + network config exist.
+      FABRIC_NETWORK_STUB: "true"
+
+  audit-service:
+    <<: *service-defaults
+    build: ./services/audit-service
+    ports:
+      - "8012:8012"
+    environment:
+      <<: *default-env
+
+  # ─────────────────────────────────────────────────────────────
+  # NOTIFICATION / REPORT / ANALYTICS / CONFIG (M6 — Diksha Jaiswal)
+  # ─────────────────────────────────────────────────────────────
+  notification-service:
+    <<: *service-defaults
+    build: ./services/notification-service
+    ports:
+      - "8013:8013"
+    environment:
+      <<: *default-env
+
+  report-service:
+    <<: *service-defaults
+    build: ./services/report-service
+    ports:
+      - "8014:8014"
+    environment:
+      <<: *default-env
+
+  analytics-service:
+    <<: *service-defaults
+    build: ./services/analytics-service
+    ports:
+      - "8015:8015"
+    environment:
+      <<: *default-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
+  configuration-service:
+    <<: *service-defaults
+    build: ./services/configuration-service
+    ports:
+      - "8016:8016"
+    environment:
+      <<: *default-env
+
+  # ─────────────────────────────────────────────────────────────
+  # WEBSOCKET GATEWAY (shared — Chapter 10)
+  # ─────────────────────────────────────────────────────────────
+  websocket-gateway:
+    <<: *service-defaults
+    build: ./services/websocket-gateway
+    ports:
+      - "8017:8017"
+    environment:
+      <<: *default-env
+
+networks:
+  sentinel-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  es-data:
+  neo4j-data:
