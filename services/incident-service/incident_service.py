@@ -11,7 +11,6 @@ class Incident(BaseModel):
 
 incidents = []
 incident_timelines = {}
-incident_evidence = {}
 
 
 @app.post("/api/v1/incidents")
@@ -80,25 +79,6 @@ def add_incident_timeline(id: int, event: dict = Body(...)):
     incident_timelines[id].append(event)
 
     return event
-
-@app.get("/api/v1/incidents/{id}/evidence")
-def get_incident_evidence(id: int):
-    if id not in [incident["id"] for incident in incidents]:
-        return {"message": "Incident not found"}
-
-    return incident_evidence.get(id, [])
-
-@app.post("/api/v1/incidents/{id}/evidence")
-def add_incident_evidence(id: int, evidence: dict = Body(...)):
-    if id not in [incident["id"] for incident in incidents]:
-        return {"message": "Incident not found"}
-
-    if id not in incident_evidence:
-        incident_evidence[id] = []
-
-    incident_evidence[id].append(evidence)
-
-    return evidence
 
 
 if __name__ == "__main__":
