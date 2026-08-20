@@ -10,6 +10,10 @@ class Incident(BaseModel):
 
 
 incidents = []
+<<<<<<< HEAD
+=======
+incident_timelines = {}
+>>>>>>> parent of 3309db9 (Add incident evidence APIs)
 
 
 @app.post("/api/v1/incidents")
@@ -60,6 +64,28 @@ def delete_incident(id: int):
 
     return {"message": "Incident not found"}
 
+<<<<<<< HEAD
+=======
+@app.get("/api/v1/incidents/{id}/timeline")
+def get_incident_timeline(id: int):
+    if id not in [incident["id"] for incident in incidents]:
+        return {"message": "Incident not found"}
+
+    return incident_timelines.get(id, [])
+
+@app.post("/api/v1/incidents/{id}/timeline")
+def add_incident_timeline(id: int, event: dict = Body(...)):
+    if id not in [incident["id"] for incident in incidents]:
+        return {"message": "Incident not found"}
+
+    if id not in incident_timelines:
+        incident_timelines[id] = []
+
+    incident_timelines[id].append(event)
+
+    return event
+
+>>>>>>> parent of 3309db9 (Add incident evidence APIs)
 
 if __name__ == "__main__":
     import uvicorn
