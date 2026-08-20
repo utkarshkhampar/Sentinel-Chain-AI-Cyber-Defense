@@ -13,6 +13,9 @@ incidents = []
 <<<<<<< HEAD
 =======
 incident_timelines = {}
+<<<<<<< HEAD
+>>>>>>> parent of 3309db9 (Add incident evidence APIs)
+=======
 >>>>>>> parent of 3309db9 (Add incident evidence APIs)
 
 
@@ -85,6 +88,9 @@ def add_incident_timeline(id: int, event: dict = Body(...)):
 
     return event
 
+<<<<<<< HEAD
+>>>>>>> parent of 3309db9 (Add incident evidence APIs)
+=======
 >>>>>>> parent of 3309db9 (Add incident evidence APIs)
 
 if __name__ == "__main__":
