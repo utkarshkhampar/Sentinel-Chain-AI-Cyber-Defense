@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body
+from fastapi import FastAPI
 from pydantic import BaseModel
 
 app = FastAPI(title="Sentinel Chain - Incident Service")
@@ -10,7 +10,6 @@ class Incident(BaseModel):
 
 
 incidents = []
-incident_timelines = {}
 
 
 @app.post("/api/v1/incidents")
@@ -60,25 +59,6 @@ def delete_incident(id: int):
             return {"message": "Incident deleted successfully"}
 
     return {"message": "Incident not found"}
-
-@app.get("/api/v1/incidents/{id}/timeline")
-def get_incident_timeline(id: int):
-    if id not in [incident["id"] for incident in incidents]:
-        return {"message": "Incident not found"}
-
-    return incident_timelines.get(id, [])
-
-@app.post("/api/v1/incidents/{id}/timeline")
-def add_incident_timeline(id: int, event: dict = Body(...)):
-    if id not in [incident["id"] for incident in incidents]:
-        return {"message": "Incident not found"}
-
-    if id not in incident_timelines:
-        incident_timelines[id] = []
-
-    incident_timelines[id].append(event)
-
-    return event
 
 
 if __name__ == "__main__":
